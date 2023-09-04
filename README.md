@@ -1,5 +1,3 @@
-# Flask-based Image-Based Graphical Password Authentication System:
-
 # Image-Based Graphical Password Authentication System
 
 Secure and user-friendly authentication system using Flask, PostgreSQL, and image-based graphical passwords.
@@ -79,7 +77,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For questions or collaboration opportunities, feel free to contact us at your@email.com.
+For questions or collaboration opportunities, feel free to contact us at monishkumarpecai@gmail.com
 
 ```
 

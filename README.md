@@ -1,72 +1,86 @@
+# Flask-based Image-Based Graphical Password Authentication System:
+
 # Image-Based Graphical Password Authentication System
 
-## Abstract
-
-Image-based graphical password systems leverage human visual and cognitive capabilities to create memorable and secure authentication mechanisms. This system leverages images and user-defined graphical passwords to provide a more secure and user-friendly authentication mechanism. Users can set up their graphical passwords by selecting specific points on an image, and these points will be used for authentication during login. The system stores the images and corresponding graphical password data. The research aims to demonstrate the feasibility and effectiveness of graphical password authentication using Flask and assess its security and usability.
-
-## Table of Contents
-
-- [Introduction](#introduction)
-- [Literature Survey](#literature-survey)
-- [Proposed Method](#proposed-method)
-  - [Architecture Overview](#architecture-overview)
-  - [Image Upload](#image-upload)
-  - [Image-Coordinate-Based Authentication](#image-coordinate-based-authentication)
-  - [Security Measures](#security-measures)
-  - [User Experience Enhancement](#user-experience-enhancement)
-- [Conclusion](#conclusion)
+Secure and user-friendly authentication system using Flask, PostgreSQL, and image-based graphical passwords.
 
 ## Introduction
 
-In today's digital landscape, the security of user accounts and data is of paramount importance. To address these concerns, this paper presents a secure image upload and authentication system, leveraging the Flask framework. This authentication approach centers on the utilization of image coordinates, a departure from conventional text-based passwords. By employing this method, the system seeks to bolster security measures while simultaneously enhancing the user experience. The system not only allows users to securely upload images but also introduces an innovative authentication approach that utilizes image coordinates. This method enhances security while maintaining a user-friendly experience, reducing the reliance on text-based passwords. Traditional password-based authentication methods are susceptible to various attacks, including brute force and phishing attacks.
+In today's digital landscape, the security of user accounts and data is of paramount importance. This project presents a secure image upload and authentication system, leveraging the Flask framework. This authentication approach uses image coordinates instead of traditional text-based passwords to enhance security and user experience.
 
-## Literature Survey
+Key features of this system include:
 
-[Include your literature survey content here.]
+- Secure image uploads with PostgreSQL storage.
+- Image-coordinate-based authentication for improved security.
+- User-friendly authentication method, reducing the need for complex passwords.
+- Robust security measures to protect user data.
 
-## Proposed Method
+## Getting Started
 
-### Architecture Overview
+Follow these steps to set up and run the system locally:
 
-The architecture of the proposed system consists of several interconnected components, each serving a specific role in achieving secure image upload and authentication. These components include:
+1. Clone the repository:
 
-- **Flask Application:** The core application built using Flask, is responsible for handling user interactions, image uploads, and authentication.
-- **SQLAlchemy and Database:** The PostgreSQL database managed by SQLAlchemy is used to store user data, uploaded images, and authentication information.
-- **Image Upload Module:** Responsible for allowing users to upload images, which are stored as binary data in the database.
-- **Authentication Module:** Implements the image-coordinate-based authentication mechanism, comparing user-entered coordinates with stored image patterns.
-- **User Information Module:** Manages user information such as email and authentication details.
+   ```bash
+   git clone https://github.com/yourusername/image-based-authentication.git
+   cd image-based-authentication
+   ```
 
-### Image Upload
+2. Install dependencies:
 
-The system enables users to securely upload images through the Flask web interface. The uploaded image is associated with the user's account and stored in the PostgreSQL database as binary data. The relevant metadata, including the image's name, MIME type, and user details, are also stored for efficient retrieval.
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Image-Coordinate-Based Authentication
+3. Set up a PostgreSQL database. Update the database configuration in `app.py`:
 
-The core innovation of the system lies in its authentication method, which leverages image coordinates for user verification. The process involves the following steps:
+   ```python
+   app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://username:password@localhost/database_name'
+   ```
 
-1. **Pattern Creation during Registration:** Users select specific coordinates from their uploaded images, creating a unique pattern for authentication. These coordinates are stored in the database along with the user's email and other relevant information.
+4. Initialize the database:
 
-2. **Authentication during Login:** During login, users are prompted to input image coordinates based on their predefined pattern.
+   ```bash
+   flask db init
+   flask db migrate
+   flask db upgrade
+   ```
 
-3. The entered coordinates are compared with the stored pattern for a match.
+5. Run the Flask application:
 
-4. **Coordinate Comparison with Tolerance:** The system compares each entered coordinate with the stored coordinates, considering a predefined tolerance range. If the entered coordinates closely match the stored pattern within the tolerance range, authentication is successful.
+   ```bash
+   flask run
+   ```
 
-### Security Measures
+6. Access the application in your web browser at `http://localhost:5000`.
 
-To enhance security, the system employs the following measures:
+## Usage
 
-- **Image Data Storage:** Images are stored as binary data, reducing the risk of unauthorized access.
-- **Coordinate Tolerance:** The tolerance range minimizes the impact of small variations during authentication, ensuring usability without compromising security.
-- **User-Specific Authentication:** The image-coordinate pattern is unique to each user, making it challenging for attackers to replicate.
+1. Register an account by providing a username, email, and uploading an image.
+2. During registration, select specific image coordinates to create a unique authentication pattern.
+3. Log in using your email, and you'll be prompted to enter the coordinates based on your predefined pattern.
+4. The system will authenticate you based on the entered coordinates.
 
-### User Experience Enhancement
+## Security Measures
 
-The proposed system aims to maintain a positive user experience while improving security. The image-based authentication method is intuitive, reducing the need for users to remember complex passwords. The familiarity of images and coordinates enhances user comfort and ease of use.
+This system employs several security measures:
 
-## Conclusion
+- Image data is securely stored as binary data, reducing the risk of unauthorized access.
+- A tolerance range is used during authentication to account for small variations.
+- The image-coordinate pattern is unique to each user, making it challenging for attackers to replicate.
 
-The research presents a Flask-based secure image upload and authentication system, addressing vulnerabilities of traditional password-based methods. Introducing image-coordinate-based authentication enhances security while maintaining usability. Images are uploaded securely, associating them with user accounts. The evaluation shows this approach offers robust protection and positive user experiences. Future enhancements could include multi-factor authentication, biometric integration, and advanced image analysis, ensuring continued resilience against evolving cyber threats. This system's adaptability and innovation have the potential to reshape online security, contributing to a more secure and user-centric digital landscape.
+## Contributing
 
-[Include information on how to set up and run the system, licensing details, and any contact information for support or collaboration.]
+Contributions to this project are welcome. You can contribute by opening issues, providing feedback, or submitting pull requests.
 
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or collaboration opportunities, feel free to contact us at your@email.com.
+
+```
+
+Please replace `"yourusername"` in the clone URL, update the database configuration, and provide your contact email in the appropriate sections. Additionally, ensure that the licensing details in the `LICENSE` file are accurate and match your project's licensing terms.

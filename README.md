@@ -20,8 +20,8 @@ Follow these steps to set up and run the system locally:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/image-based-authentication.git
-   cd image-based-authentication
+   git clone https://github.com/imonishkumar/Graphical_Password_Authentication_system_using_flask
+   cd Graphical_Password_Authentication_system_using_flask
    ```
 
 2. Install dependencies:
@@ -81,4 +81,3 @@ For questions or collaboration opportunities, feel free to contact us at monishk
 
 ```
 
-Please replace `"yourusername"` in the clone URL, update the database configuration, and provide your contact email in the appropriate sections. Additionally, ensure that the licensing details in the `LICENSE` file are accurate and match your project's licensing terms.

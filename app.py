@@ -1,12 +1,17 @@
+from collections import UserDict
 import os
-from flask import Flask, render_template, request, send_file
+from django import apps
+from flask import Flask, render_template, request, send_file, redirect, url_for
+from flask_login import LoginManager, current_user, login_user, login_required, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from base64 import b64encode
+import bcrypt
+import string
+
 
 app = Flask(__name__)
-
 app.secret_key = 'sssssrfgvv'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:root@localhost/prototype'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -33,17 +38,28 @@ class UserInfo(db.Model):
     umail = db.Column(db.String, nullable=False)
     uspass = db.Column(db.String, nullable=False)
 
+# Define your User model here (replace with actual model definition)
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String, unique=True)
+    password = db.Column(db.String)
+    failed_login_attempts = db.Column(db.Integer, default=0)
+    locked = db.Column(db.Boolean, default=False)
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
 
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
-@app.route("/", methods=["POST", "GET"])
+@app.route("/", methods=["POST","GET"])
 def index():
+    return render_template("index.html")
+
+
+@app.route("/signup", methods=["POST", "GET"])
+def signup():
     if request.method == 'POST':
         uname = request.form.get("user_name")
         umail = request.form.get("user_email")
@@ -62,9 +78,9 @@ def index():
 
             userImg = Image.query.filter_by(umail=umail).first()
             image_data_base64 = b64encode(userImg.data).decode('utf-8')
-            return render_template("base.html", uname=uname, imga=userImg, image_data_base64=image_data_base64)
+            return render_template("signupimg.html", uname=uname, imga=userImg, image_data_base64=image_data_base64)
 
-    return render_template("index.html")
+    return render_template("signup.html")
 
 
 @app.route('/download/<int:image_id>')
@@ -87,11 +103,17 @@ def success():
     )
     db.session.add(user)
     db.session.commit()
-    return render_template("success.html", msg="Account created")
+    
+    # Pass the success message to the template
+    success_message = "Account created successfully"
+    
+    return render_template("success.html", success_message=success_message)
+
 
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
+
     if request.method == 'POST':
         dummy = request.form.get("ur_email")
         usmail = dummy
@@ -99,42 +121,92 @@ def login():
 
         if userImg:
             image_data_base64 = b64encode(userImg.data).decode('utf-8')
-            return render_template("a.html", imga=userImg, image_data_base64=image_data_base64)
+            return render_template("loginimag.html", imga=userImg, image_data_base64=image_data_base64)
 
     return render_template("login.html")
 
 
-@app.route("/dash", methods=["POST", "GET"])
+@app.route("/home", methods=["POST", "GET"])
 def authenticate():
-    reqUser = UserInfo.query.filter_by(umail=usmail).first()
-    passdata = reqUser.uspass
-    stored_coordinates = passdata.split()
-    print("Stored coordinates:", stored_coordinates)
+    if request.method == 'POST':
+        tolerance = request.form.get("tolerance")
+        reqUser = UserInfo.query.filter_by(umail=usmail).first()
 
-    loginuser = request.form.get("passxy")
-    clicked_coordinates = (loginuser.split())
-    print("Clicked coordinates:", clicked_coordinates)
+        passdata = reqUser.uspass
+        stored_coordinates = [int(coord) for coord in passdata.split()]
+        print("Stored coordinates:", stored_coordinates)
 
-    tolerance = 40  # Adjust this value as needed
-    matching_points_count = 0
-    for i in range(0, len(stored_coordinates), 2):
-        stored_x  = int(stored_coordinates[i])
-        stored_y  = int(stored_coordinates[i + 1])
-        clicked_x = int(clicked_coordinates[i])
-        clicked_y = int(clicked_coordinates[i + 1])
+        loginuser = request.form.get("passxy")
+        clicked_coordinates = [int(coord) for coord in loginuser.split()]
+        print("Clicked coordinates:", clicked_coordinates)
 
-        x_diff = abs(stored_x - clicked_x)
-        y_diff = abs(stored_y - clicked_y)
+        if tolerance is None:
+            tolerance = 30
+        print("Tolerance:", tolerance)
 
-        if x_diff <= tolerance and y_diff <= tolerance:
-            matching_points_count += 1
+        matching_points_count = 0
 
-    print("Matching points count:", matching_points_count)
+        for i in range(0, len(stored_coordinates), 2):
+            stored_x  = int(stored_coordinates[i])
+            stored_y  = int(stored_coordinates[i + 1])
 
-    if matching_points_count >= 3:
-        return render_template("success.html", msg="You are successfully logged in")
-    else:
-        return render_template("success.html", msg="Sorry, you're unauthenticated")
+            clicked_x = int(clicked_coordinates[i])
+            clicked_y = int(clicked_coordinates[i + 1])
+
+            x_diff = abs(stored_x - clicked_x)
+            y_diff = abs(stored_y - clicked_y)
+
+            if x_diff <= tolerance and y_diff <= tolerance:
+                matching_points_count += 1
+
+        print("Matching points count:", matching_points_count)
+
+        if matching_points_count >= 2:
+            return render_template("home.html")
+        else:
+            return render_template("failure.html")
+
+
+# Extend string.punctuation with a space
+string.punctuation = string.punctuation + " "
+
+MAX_FAILED_LOGIN_ATTEMPTS = 5
+
+def validate_password(password):
+    length_requirement = 8
+    complexity_requirement = 3
+
+    if len(password) < length_requirement:
+        return False
+
+    if not any(c.islower() for c in password):
+        return False
+
+    if not any(c.isupper() for c in password):
+        return False
+
+    if not any(c.isdigit() for c in password):
+        return False
+
+    if not any(c in string.punctuation for c in password):
+        return False
+
+    return True
+
+def lockout_account(user_id):
+    user = User.query.get(user_id)
+    if user:
+        user.failed_login_attempts += 1
+        # Assuming you have a method like update_timestamps for user updates
+        user.update_timestamps()
+        db.session.commit()
+
+        if user.failed_login_attempts >= MAX_FAILED_LOGIN_ATTEMPTS:
+            user.locked = True
+            # Assuming you have a method like update_timestamps for user updates
+            user.update_timestamps()
+            db.session.commit()
+
 
 
 
